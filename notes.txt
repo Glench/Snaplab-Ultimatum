@@ -1,0 +1,20 @@
+Notes for this game
+
+Basic premise:
+a player is chosen at random to have a certain amount
+of points (possibly real money?). They can divy this money up any way
+they'd like between themselves and the n other players. Once the
+amounts are decided, each player can accept or reject their offer. If
+a certain percent reject it, then no one gets anything. Otherwise,
+everyone gets the amount promised. That said, the catch here is that
+some or all of the players can view what the other recipients were
+offered and their responses in real time. Possibly any of these
+players could be robots, too.
+
+Things that could be done:
+
+- write bots to play
+- make this only a one-player game with contrived situations for the giver or receiver
+- get a bunch of people from all over the world to play
+- vary graphical parameters of the game to see if it makes a difference, or give other functionality like "split evenly" button to see if they do that more
+- 
