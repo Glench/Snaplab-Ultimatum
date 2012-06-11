@@ -2,25 +2,90 @@
 <html>
     <head>
         <title>Ultimatum game</title>
+        <link href="bootstrap.min.css" rel="stylesheet" />
         <style type="text/css">
-            
+            #receiver-form, .receiver-view {
+                text-align: center;
+            }
         </style>
     </head>
 
     <body>
-        <div id="giver" style="display: none">
+        <div class="container">
+
+            <noscript>
+                <div class="alert alert-error">You cannot play this game because JavaScript is disabled.</div>
+            </noscript>
         </div>
 
-        <div id="receiver" style="display: none">
-        </div>
+        <script type="text/x-underscore-template" id="giver-form-template">
+            <div id="giver-form" class="well">
+                <h2>You have {{ total_amount }}. How many do you want to give to each player?</h2>
+                <form action class="form-inline">
+                    {% _.each(players, function(player) { %}
+                        {% if (player.id === 1) { %}
+                            <input type="text" name="{{ player.id }}" placeholder="You"/>
+                        {% } else { %}
+                            <input type="text" name="{{ player.id }}" placeholder="Player {{ player.id }}"/>
+                        {% } %}
+                    {% }}); %}
 
-        <noscript>
-            You cannot play this game because JavaScript is disabled.
-        </noscript>
+                    <div class="form-actions">
+                        <a href="#null" class="btn btn-secondary">Clear</a>
+                        <a href="#null" class="btn btn-primary">Done</a>
+                    </div>
+                </form>
+            </div>
+        </script>
+
+        <!-- what the receiver sees when the giver is done and the receiver has to accept or reject -->
+        <script type="text/x-underscore-template" id="receiver-form-template">
+            <div id="receiver-form" class="well">
+                <h3>You</h3>
+                <h2>{{ player.amount }}</h2>
+                <form action>
+                    <a href="#null" id="accept" class="btn btn-primary">Accept</a>
+                    <a href="#null" id="reject" class="btn btn-primary">Reject</a>
+                </form>
+            </div>
+        </script>
+
+        <!-- what the receiver sees both after he/she chooses for him/herself and what they see for the other players -->
+        <script type="text/x-underscore-template" id="receiver-view-template">
+            <div class="receiver-view">
+                <h3>Player {{ player.id }}</h3>
+                {% if (_.isNull(player.acceptedOffer)) { %}
+                    <h2>{{ player.amount }}</h2>
+                {% } else if (player.acceptedOffer) { %}
+                    <h2 class="alert alert-success">{{ player.amount }}</h2>
+                {% } else { %}
+                    <h2 class="alert alert-error">{{ player.amount }}</h2>
+                {% } %}
+            </div>
+        </script>
+
+        <script type="text/javascript" src="underscore-min.js"></script>
         <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="ultimatum.js"></script>
         <script type="text/javascript">
-            var ultimatum = Ultimatum();
+            $('a[href="#null"]').on('click', function(evt) {
+                evt.preventDefault();
+            });
+            _.templateSettings = {
+                interpolate: /\{\{(.+?)\}\}/g,
+                evaluate: /\{\%(.+?)\%\}/g
+            };
+
+            // doing this globally even though it is evil
+            ultimatum = null;
+            function initialize() {
+                // var ultimatum = Ultimatum(numPlayers, variables.total_amount);
+                ultimatum = Ultimatum(2, 10);
+            };
+
+            function newMove(participantId, index) {
+
+            };
         </script>
     </body>
 </html>

@@ -1,5 +1,6 @@
 var Ultimatum = function(numPlayers, totalAmount) {
     // the game encapsulated so as not to pollute global namespace
+    // it requires jquery
 
     var ultimatum = {
             totalAmount: totalAmount, // total amount to be divvied up
@@ -23,7 +24,7 @@ var Ultimatum = function(numPlayers, totalAmount) {
                     }
 
                     // make sure they aren't a giver and receiver by using
-                    // not of xor
+                    // this is a not of xor
                     if (!(!player.isGiver !== !player.isReceiver)) {
                         return false;
                     }
@@ -45,6 +46,7 @@ var Ultimatum = function(numPlayers, totalAmount) {
 
     // init functions
     for (var i = 0; i < numPlayers; ++i) {
+        // TODO: I belive this should be id = i+1, i == 1, and i != 1
         ultimatum.players[i] = Player({
             id: i,
             isGiver: i == 0,
@@ -53,6 +55,7 @@ var Ultimatum = function(numPlayers, totalAmount) {
     }
 
     ultimatum.numPlayers = function() { return ultimatum.players.length; };
+    ultimatum.getPlayer = function(id) { return ultimatum.players[id-1]; };
 
     ultimatum.calculatedTotal = function() {
         var total = 0, i;

@@ -11,6 +11,12 @@ some or all of the players can view what the other recipients were
 offered and their responses in real time. Possibly any of these
 players could be robots, too.
 
+- have to define newMove, call submit and setround, and initialize
+- update api docs with fetchMove, currentRound
+- figure out how moves/rounds are going to work
+    - first round is giver round (0), makes n moves when done (+1 for accepting their own offer on next round)
+    - after receiving n newmoves, fetch each move by round=0, participant = 1, index = 0..n and update each player (get by index+1) (set ultimatum.givingRound to start round, ultimatum.giverId to 1)
+
 Things that could be done:
 
 - write bots to play
