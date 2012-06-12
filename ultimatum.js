@@ -1,10 +1,17 @@
-var Ultimatum = function(numPlayers, totalAmount) {
+var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
     // the game encapsulated so as not to pollute global namespace
-    // requires jQuery
+    // requires jQuery and underscore.js
 
     var ultimatum = {
             totalAmount: totalAmount, // total amount to be divvied up
-            players: [] // instances of the Player model
+            currentPlayerId: currentPlayerId, // used to find the current player
+            giverId: 1, // used to make sure the giver gets shown different screens
+            players: [], // instances of the Player model
+            currRound: 0,
+            instructionRound: 0, // define which round number corresponds to which stage
+            givingRound: 1,
+            receivingRound: 2,
+            resultsRound: 3
         },
         Player = function (params) {
             // each player in the game
@@ -15,7 +22,7 @@ var Ultimatum = function(numPlayers, totalAmount) {
                     amount: null, // the amount his player receives
                     acceptedOffer: null // has accepted the offer or not
                 },
-                player = $.extend(player_defaults, params);
+                player = $.extend(playerDefaults, params);
 
                 player.validate = function() {
                     // make sure they have an id
@@ -48,13 +55,36 @@ var Ultimatum = function(numPlayers, totalAmount) {
     for (var i = 0; i < numPlayers; ++i) {
         ultimatum.players[i] = Player({
             id: i+1,
-            isGiver: i+1 == 0,
-            isReceiver: i+1 != 0
+            isGiver: i+1 == ultimatum.giverId,
+            isReceiver: i+1 != ultimatum.giverId
         });
+    }
+    ultimatum.start = function() {
+        // starts the game
+        $('#template-area').html(this.renderTemplate('#instructions-template', this.getCurrentPlayer()));
+        $('.btn').on('click', $.proxy(function(evt) {
+            this.nextRound();
+        }, this));
+    };
+
+    ultimatum.nextRound = function() {
+        if (this.currRound == this.instructionRound) {
+
+        } else if (this.currRound == this.givingRound) {
+
+        } else if (this.currRound == this.receivingRound) {
+
+        } else if (this.currRound == this.resultsRound) {
+
+        } else {
+            throw 'Unknown round ' + this.currRound;
+        }
+        this.currRound = this.currRound + 1;
     }
 
     ultimatum.numPlayers = function() { return ultimatum.players.length; };
     ultimatum.getPlayer = function(id) { return ultimatum.players[id-1]; };
+    ultimatum.getCurrentPlayer = function() { return this.getPlayer(this.currentPlayerId); };
 
     ultimatum.calculatedTotal = function() {
         var total = 0, i;
@@ -72,8 +102,13 @@ var Ultimatum = function(numPlayers, totalAmount) {
         if (ultimatum.calculatedTotal() > ultimatum.totalAmount) {
             return false;
         }
-
         return true;
+    };
+
+    ultimatum.renderTemplate = function(selector, params) {
+        // find the template for the given selector and renders it with the
+        // given params.
+        return _.template($(selector).text(), params);
     };
 
     return ultimatum;

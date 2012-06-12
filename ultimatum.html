@@ -16,8 +16,19 @@
             <noscript>
                 <div class="alert alert-error">You cannot play this game because JavaScript is disabled.</div>
             </noscript>
+            <div id="template-area">
+                <!-- where the templates are rendered -->
+            </div>
         </div>
 
+        <script type="text/x-underscore-template" id="instructions-template">
+            <h1>Hi!</h1>
+            {% if (isGiver) { %}
+                <p>In this game, you have a number of points. You can divvy them up however you'd like between all the players including yourself. If the majority of the players accept your offer, everyone gets what you offered. If they don't vote in favor, then no one gets anything.</p>
+                <a class="btn btn-primary">I understand</a>
+            {% } else { %}
+            {% } %}
+        </script>
         <script type="text/x-underscore-template" id="giver-form-template">
             <div id="giver-form" class="well">
                 <h2>You have {{ total_amount }}. How many do you want to give to each player?</h2>
@@ -79,10 +90,12 @@
             // doing this globally even though it is evil
             ultimatum = null;
             function initialize() {
-                // var ultimatum = Ultimatum(numPlayers, variables.total_amount);
-                ultimatum = Ultimatum(2, 10);
+                // var ultimatum = Ultimatum(numPlayers, variables.total_amount, myid);
+                ultimatum = Ultimatum(2, 10, 1);
+                ultimatum.start();
             };
 
+            initialize();
             function newMove(participantId, index) {
 
             };
