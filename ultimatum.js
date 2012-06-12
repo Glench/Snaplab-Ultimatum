@@ -1,6 +1,6 @@
 var Ultimatum = function(numPlayers, totalAmount) {
     // the game encapsulated so as not to pollute global namespace
-    // it requires jquery
+    // requires jQuery
 
     var ultimatum = {
             totalAmount: totalAmount, // total amount to be divvied up
@@ -46,11 +46,10 @@ var Ultimatum = function(numPlayers, totalAmount) {
 
     // init functions
     for (var i = 0; i < numPlayers; ++i) {
-        // TODO: I belive this should be id = i+1, i == 1, and i != 1
         ultimatum.players[i] = Player({
-            id: i,
-            isGiver: i == 0,
-            isReceiver: i != 0
+            id: i+1,
+            isGiver: i+1 == 0,
+            isReceiver: i+1 != 0
         });
     }
 
@@ -64,6 +63,7 @@ var Ultimatum = function(numPlayers, totalAmount) {
                 total += ultimatum.players[i].amount;
             }
         }
+        return total;
     };
 
     ultimatum.validate = function() {
@@ -71,13 +71,6 @@ var Ultimatum = function(numPlayers, totalAmount) {
         // were allowed to put
         if (ultimatum.calculatedTotal() > ultimatum.totalAmount) {
             return false;
-        }
-
-        // validate each player
-        for (var i = 0; i < ultimatum.numPlayers(); ++i) {
-            if (!ultimatum.players[i].validate()) {
-                return false;
-            }
         }
 
         return true;
