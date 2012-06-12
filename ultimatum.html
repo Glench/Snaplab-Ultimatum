@@ -38,19 +38,23 @@
 
         <script type="text/x-underscore-template" id="giver-form-template">
             <div id="giver-form" class="well">
-                <h2>You have {{ totalAmount }}. How many do you want to give to each player?</h2>
-                <form action class="form-inline">
+                <h2>You have <span id="totalAmount">{{ totalAmount }}</span>. How many do you want to give to each player?</h2>
+                <form action>
                     {% _.each(players, function(player) { %}
-                        {% if (player.id === 1) { %}
-                            <div class="control-group">
-                                <input type="text" name="{{ player.id }}" placeholder="You"/>
-                            </div>
-                        {% } else { %}
-                            <div class="control-group">
-                                <input type="text" name="{{ player.id }}" placeholder="Player {{ player.id }}"/>
-                            </div>
-                        {% } %}
+                        <div class="player control-group" playerid="{{ player.id }}">
+                            {% if (player.id === 1) { %}
+                                <label class="control-label">You:</label>
+                                <input type="text" name="{{ player.id }}" />
+                            {% } else { %}
+                                <label class="control-label">Player {{ player.id }}:</label>
+                                <input type="text" name="{{ player.id }}" />
+                            {% } %}
+                        </div>
                     {% }); %}
+
+                    <div class="alert alert-info">
+                        <h4 class="alert-heading">Amount left:</h4> <span id="calculatedAmount">{{ totalAmount }}</span>
+                    </div>
 
                     <div class="form-actions">
                         <a href="#null" class="btn btn-secondary">Clear</a>
@@ -75,13 +79,13 @@
         <!-- what the receiver sees both after he/she chooses for him/herself and what they see for the other players -->
         <script type="text/x-underscore-template" id="receiver-view-template">
             <div class="receiver-view">
-                <h3>Player {{ player.id }}</h3>
-                {% if (_.isNull(player.acceptedOffer)) { %}
-                    <h2>{{ player.amount }}</h2>
-                {% } else if (player.acceptedOffer) { %}
-                    <h2 class="alert alert-success">{{ player.amount }}</h2>
+                <h3>Player {{ id }}</h3>
+                {% if (_.isNull(acceptedOffer)) { %}
+                    <h2>{{ amount }}</h2>
+                {% } else if (acceptedOffer) { %}
+                    <h2 class="alert alert-success">{{ amount }}</h2>
                 {% } else { %}
-                    <h2 class="alert alert-error">{{ player.amount }}</h2>
+                    <h2 class="alert alert-error">{{ amount }}</h2>
                 {% } %}
             </div>
         </script>
@@ -99,11 +103,11 @@
             ultimatum = null;
             function initialize() {
                 // var ultimatum = Ultimatum(numPlayers, variables.total_amount, myid);
-                ultimatum = Ultimatum(2, 10, 1);
+                ultimatum = Ultimatum(2, 10, 1); // TODO: remove this after debugging
                 ultimatum.start();
             };
 
-            initialize();
+            initialize(); // TODO: remove this after debugging
             function newMove(participantId, index) {
 
             };
@@ -114,7 +118,6 @@
             setRound = function(thing) {}; // TODO: remove this debugging
             // change the round
             $ultimatum.on('nextRound', function(evt) {
-                ultimatum.rebind();
                 setRound(ultimatum.currRound);
             });
 

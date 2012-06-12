@@ -64,9 +64,9 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
         // starts the game
         $('#template-area').html(this.renderTemplate('#instructions-template', this.getCurrentPlayer()));
 
-        this.rebind();
         var self = this;
         $('.btn').on('click', function(evt) {
+            evt.preventDefault();
             self.nextRound();
             // make sure to unbind so not all buttons do this
             $(this).off('click');
@@ -74,17 +74,69 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
     };
 
     ultimatum.nextRound = function() {
-        var currentPlayer = this.getCurrentPlayer();
+        var currentPlayer = this.getCurrentPlayer(),
+            self = this;
         if (this.currRound == this.instructionRound) {
             if (currentPlayer.isGiver) {
                 $('#template-area').html(this.renderTemplate('#giver-form-template', this));
+
+                $('.player input').on('change', function(evt) {
+                    var playerId = $(this).attr('name'),
+                        player = self.getPlayer(playerId),
+                        amount = parseInt($(this).val());
+                    // update the player with the new amount
+                    if (_.isNaN(amount)) {
+                        player.amount = null;
+                    } else {
+                        player.amount = amount;
+                    }
+
+                    // make sure this is a valid amount for the player
+                    var $playerContainer = $(this).parents('.control-group');
+                    if (player.validate()) {
+                        $playerContainer.removeClass('error');
+                    } else {
+                        $playerContainer.addClass('error');
+                    }
+
+                    // update the total amount left in the game
+                    $('#calculatedAmount').html(self.totalAmount - self.calculatedTotal());
+                    // make sure this is a valid amount for the game
+                    if (!self.validate()) {
+                        $('.alert').addClass('alert-error');
+                        $('.alert').removeClass('alert-info');
+                    } else {
+                        $('.alert').removeClass('alert-error');
+                        $('.alert').addClass('alert-info');
+                    }
+                });
+
+                $('.btn-primary').on('click', function(evt) {
+                    // submit all player inputs
+                });
+
+                $('.btn-secondary').on('click', function(evt) {
+                    // clear out player values
+                    $('.player input').val('').trigger('change');
+                });
             }
         } else if (this.currRound == this.givingRound) {
+            if (currentPlayer.isGiver) {
+            } else {
 
+            }
         } else if (this.currRound == this.receivingRound) {
+            if (currentPlayer.isGiver) {
 
+            } else {
+
+            }
         } else if (this.currRound == this.resultsRound) {
+            if (currentPlayer.isGiver) {
 
+            } else {
+
+            }
         } else {
             throw 'Unknown round ' + this.currRound;
         }
@@ -92,16 +144,10 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
         $(this.selector).trigger('nextRound');
     }
 
-    ultimatum.rebind = function() {
-        // rebind things when DOM changes, usually round change
-        $('a[href="#null"]').off('click');
-        $('a[href="#null"]').on('click', function(evt) {
-            evt.preventDefault();
-        });
-    }
-
     ultimatum.numPlayers = function() { return ultimatum.players.length; };
+
     ultimatum.getPlayer = function(id) { return ultimatum.players[id-1]; };
+
     ultimatum.getCurrentPlayer = function() { return this.getPlayer(this.currentPlayerId); };
 
     ultimatum.calculatedTotal = function() {
