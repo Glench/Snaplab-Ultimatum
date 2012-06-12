@@ -126,17 +126,23 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
                     if (!self.validate()) {
                         $('.alert').addClass('alert-error');
                         $('.alert').removeClass('alert-info');
+                        $('.alert').removeClass('alert-success');
                     } else {
                         $('.alert').removeClass('alert-error');
-                        $('.alert').addClass('alert-info');
+                        $('.alert').removeClass('alert-info');
+                        $('.alert').addClass('alert-success');
                     }
                 });
 
                 $('.btn-primary').on('click', function(evt) {
                     // submit all player inputs
                     evt.preventDefault();
-                    self.getCurrentPlayer().acceptOffer();
-                    $(self.selector).trigger('givingRoundOver');
+                    if (self.validate() && self.validatePlayers()) {
+                        self.getCurrentPlayer().acceptOffer();
+                        $(self.selector).trigger('givingRoundOver');
+                    } else {
+                        $('input').trigger('change');
+                    }
                 });
 
                 $('.btn-secondary').on('click', function(evt) {
@@ -210,8 +216,21 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
     ultimatum.validate = function() {
         // have to validate they didn't put an amount over the total that they
         // were allowed to put
-        if (ultimatum.calculatedTotal() > ultimatum.totalAmount) {
+        if (ultimatum.calculatedTotal() != ultimatum.totalAmount) {
             return false;
+        }
+        return true;
+    };
+
+    ultimatum.validatePlayers = function() {
+        // have to validate they didn't put an amount over the total that they
+        // were allowed to put
+        var player;
+        for (var i=0; i < this.players.length; ++i) {
+            player = this.players[i];
+            if (!player.validate()) {
+                return false;
+            }
         }
         return true;
     };
