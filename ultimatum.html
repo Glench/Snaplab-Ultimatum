@@ -31,7 +31,7 @@
             <h1>Hi!</h1>
             {% if (isGiver) { %}
                 <p>In this game, you have a number of points. You can divvy them up however you'd like between all the players including yourself. If the majority of the players accept your offer, everyone gets what you offered. If they don't vote in favor, then no one gets anything.</p>
-                <a class="btn btn-primary" href="#null">I understand</a>
+                <a class="btn btn-primary" href="#null">I understand&mdash;Start the game!</a>
             {% } else { %}
                 <p>In this game, another player has a number of points. They can divvy them up however they'd like between all the players including yourself. If the majority of the players accept their offer, everyone gets what that player offered them. If the majority don't accept their offer, then no one gets anything.</p>
 
@@ -97,6 +97,16 @@
             </div>
         </script>
 
+        <!-- the screen for the end result of the game -->
+        <script type="text/x-underscore-template" id="results-template">
+            {% if (enoughAccepted()) { %}
+                <div class="alert alert-success"><h1>Congratulations! :D A majority of offers were accepted!</h1></div>
+            {% } else { %}
+                <div class="alert alert-error"><h1>Aw, no one gets anything :(</h1></div>
+            {% } %}
+            <p>Thanks for playing! You will be forwarded momentarily.</p>
+        </script>
+
         <script type="text/javascript" src="underscore-min.js"></script>
         <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="ultimatum.js"></script>
@@ -143,6 +153,11 @@
 
             $ultimatum.on('receivingRoundOver', function(evt) {
                 ultimatum.nextRound();
+            });
+
+            $ultimatum.on('resultsRoundOver', function(evt) {
+                // do quit code here
+                console.log('omg!')
             });
 
         </script>

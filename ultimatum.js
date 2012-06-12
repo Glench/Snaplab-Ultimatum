@@ -183,17 +183,11 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                     $templateArea.append(self.renderTemplate('#receiver-view-template', player));
                 }
             });
-
         } else if (this.currRound == this.receivingRound) {
             // the results screen
-            if (this.enoughAccepted()) {
-                $('#template-area').html('<div class="alert alert-success"><h1>Congratulations! :D A majority of offers were accepted!</h1></div>')
-            } else {
-                $('#template-area').html('<div class="alert alert-error"><h1>Aw, no one gets anything :(</h1></div>')
-            }
-
-        } else if (this.currRound == this.resultsRound) {
-            // time to quit the game
+            $('#template-area').html(this.renderTemplate('#results-template', this));
+            setTimeout(function() {$(self.selector).trigger('resultsRoundOver')},
+                5*1000);
         } else {
             throw 'Unknown round ' + this.currRound;
         }
