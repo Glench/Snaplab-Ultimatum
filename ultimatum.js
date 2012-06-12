@@ -184,22 +184,9 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                 }
             });
 
-            _.delay(function() { // TODO: remove this when debugging over
-                $(self.selector).trigger('receivingRoundOver')
-            }, 8*1000);
         } else if (this.currRound == this.receivingRound) {
             // the results screen
-            var totalAccepted = 0,
-                percentAccepted,
-                player;
-            for (var i = 0; i < this.players.length; ++i) {
-                player = this.players[i];
-                if (player.acceptedOffer) {
-                    totalAccepted = totalAccepted + 1;
-                }
-            }
-            percentAccepted = totalAccepted / this.players.length;
-            if (percentAccepted > this.percentNeeded) {
+            if (this.enoughAccepted()) {
                 $('#template-area').html('<div class="alert alert-success"><h1>Congratulations! :D A majority of offers were accepted!</h1></div>')
             } else {
                 $('#template-area').html('<div class="alert alert-error"><h1>Aw, no one gets anything :(</h1></div>')
@@ -210,7 +197,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
         } else {
             throw 'Unknown round ' + this.currRound;
         }
-        this.currRound = this.currRound + 1;
+        this.currRound += 1;
         $(this.selector).trigger('nextRound');
     }
 
@@ -229,6 +216,22 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
         }
         return total;
     };
+
+    ultimatum.enoughAccepted = function() {
+        // returns true if the percent accepting is above the percent needed
+        // for a success
+        var totalAccepted = 0,
+            percentAccepted,
+            player;
+        for (var i = 0; i < this.players.length; ++i) {
+            player = this.players[i];
+            if (player.acceptedOffer) {
+                totalAccepted += 1;
+            }
+        }
+        return (totalAccepted / this.players.length) > this.percentNeeded;
+
+    }
 
     ultimatum.validate = function() {
         // have to validate they didn't put an amount over the total that they
