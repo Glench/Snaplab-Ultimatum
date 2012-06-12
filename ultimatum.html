@@ -6,6 +6,12 @@
         <style type="text/css">
             #receiver-form, .receiver-view {
                 text-align: center;
+                float: left;
+                width: 10%;
+                margin-right: 20px;
+            }
+            #receiver-form .alert, .receiver-view .alert {
+                padding-right: 14px;
             }
         </style>
     </head>
@@ -39,16 +45,11 @@
         <script type="text/x-underscore-template" id="giver-form-template">
             <div id="giver-form" class="well">
                 <h2>You have <span id="totalAmount">{{ totalAmount }}</span>. How many do you want to give to each player?</h2>
-                <form action>
+                <form action="">
                     {% _.each(players, function(player) { %}
                         <div class="player control-group" playerid="{{ player.id }}">
-                            {% if (player.id === 1) { %}
-                                <label class="control-label">You:</label>
-                                <input type="text" name="{{ player.id }}" />
-                            {% } else { %}
-                                <label class="control-label">Player {{ player.id }}:</label>
-                                <input type="text" name="{{ player.id }}" />
-                            {% } %}
+                            <label class="control-label">{{ player.getName() }}:</label>
+                            <input type="text" name="{{ player.id }}" />
                         </div>
                     {% }); %}
 
@@ -66,27 +67,32 @@
 
         <!-- what the receiver sees when the giver is done and the receiver has to accept or reject -->
         <script type="text/x-underscore-template" id="receiver-form-template">
-            <div id="receiver-form" class="well">
-                <h3>You</h3>
-                <h2>{{ player.amount }}</h2>
-                <form action>
-                    <a href="#null" id="accept" class="btn btn-primary">Accept</a>
-                    <a href="#null" id="reject" class="btn btn-primary">Reject</a>
-                </form>
+            <div id="receiver-form" class=" receiver-view">
+                <div class="alert alert-info">
+                    <h3>{{ getName() }}</h3>
+                    <h2>{{ amount }}</h2>
+                    <form action>
+                        <div style=""><a href="#null" id="accept" class="btn btn-primary">Accept</a></div>
+                        <div>or</div>
+                        <div><a href="#null" id="reject" class="btn btn-primary">Reject</a></div>
+                    </form>
+                </div>
             </div>
         </script>
 
         <!-- what the receiver sees both after he/she chooses for him/herself and what they see for the other players -->
         <script type="text/x-underscore-template" id="receiver-view-template">
-            <div class="receiver-view">
-                <h3>Player {{ id }}</h3>
-                {% if (_.isNull(acceptedOffer)) { %}
+            <div class="receiver-view" id="{{ id }}">
+                    {% if (_.isNull(acceptedOffer)) { %}
+                <div class="alert alert-info">
+                    {% } else if (acceptedOffer) { %}
+                <div class="alert alert-success">
+                    {% } else { %}
+                <div class="alert alert-error">
+                    {% } %}
+                    <h3>{{ getName() }}</h3>
                     <h2>{{ amount }}</h2>
-                {% } else if (acceptedOffer) { %}
-                    <h2 class="alert alert-success">{{ amount }}</h2>
-                {% } else { %}
-                    <h2 class="alert alert-error">{{ amount }}</h2>
-                {% } %}
+                </div>
             </div>
         </script>
 
@@ -108,17 +114,30 @@
             };
 
             initialize(); // TODO: remove this after debugging
+            function submit(thing) { 
+                // TODO: remove this after debugging 
+            }
+            setRound = function(thing) {}; // TODO: remove this debugging
+
             function newMove(participantId, index) {
 
             };
+
             // do all the event bindings here and not in Ultimatum so as not to
             // pollute Ultimatum with a bunch of magic global variables
             var $ultimatum = $(ultimatum.selector);
 
-            setRound = function(thing) {}; // TODO: remove this debugging
             // change the round
             $ultimatum.on('nextRound', function(evt) {
                 setRound(ultimatum.currRound);
+            });
+
+            $ultimatum.on('givingRoundOver', function(evt) {
+                // submit all the values the giving player made
+                _.each(ultimatum.players, function(player) {
+                    submit(player.amount);
+                });
+                ultimatum.nextRound()
             });
 
         </script>
