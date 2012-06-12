@@ -16,6 +16,7 @@ players could be robots, too.
 - figure out how moves/rounds are going to work
     - first round is giver round (0), makes n moves when done (+1 for accepting their own offer on next round)
     - after receiving n newmoves, fetch each move by round=0, participant = 1, index = 0..n and update each player (get by index+1) (set ultimatum.givingRound to start round, ultimatum.giverId to 1)
+    - send move when giver goes past instruction round so other players know to switch to next round
 
 Things that could be done:
 
