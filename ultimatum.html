@@ -110,7 +110,7 @@
             ultimatum = null;
             function initialize() {
                 // var ultimatum = Ultimatum(numPlayers, variables.total_amount, myid);
-                ultimatum = Ultimatum(2, 10, 1); // TODO: remove this after debugging
+                ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging
                 ultimatum.start();
             };
 
@@ -139,6 +139,10 @@
                     submit(player.amount);
                 });
                 ultimatum.nextRound()
+            });
+
+            $ultimatum.on('receivingRoundOver', function(evt) {
+                ultimatum.nextRound();
             });
 
         </script>

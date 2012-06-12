@@ -1,10 +1,11 @@
-var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
+var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId) {
     // the game encapsulated so as not to pollute global namespace
     // requires jQuery and underscore.js
 
     var ultimatum = {
             totalAmount: totalAmount, // total amount to be divvied up
             currentPlayerId: currentPlayerId, // used to find the current player
+            percentNeeded: percentNeeded, // percent needed to accept offers
             giverId: 1, // used to make sure the giver gets shown different screens
             selector: '#ultimatum', // the selector for the div containing this game
             players: [], // instances of the Player model
@@ -182,12 +183,28 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
                     $templateArea.append(self.renderTemplate('#receiver-view-template', player));
                 }
             });
+
+            _.delay(function() { // TODO: remove this when debugging over
+                $(self.selector).trigger('receivingRoundOver')
+            }, 8*1000);
         } else if (this.currRound == this.receivingRound) {
-            if (currentPlayer.isGiver) {
-
-            } else {
-
+            // the results screen
+            var totalAccepted = 0,
+                percentAccepted,
+                player;
+            for (var i = 0; i < this.players.length; ++i) {
+                player = this.players[i];
+                if (player.acceptedOffer) {
+                    totalAccepted = totalAccepted + 1;
+                }
             }
+            percentAccepted = totalAccepted / this.players.length;
+            if (percentAccepted > this.percentNeeded) {
+                $('#template-area').html('<div class="alert alert-success"><h1>Congratulations! :D A majority of offers were accepted!</h1></div>')
+            } else {
+                $('#template-area').html('<div class="alert alert-error"><h1>Aw, no one gets anything :(</h1></div>')
+            }
+
         } else if (this.currRound == this.resultsRound) {
             // time to quit the game
         } else {
