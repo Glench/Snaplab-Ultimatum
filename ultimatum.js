@@ -6,6 +6,7 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
             totalAmount: totalAmount, // total amount to be divvied up
             currentPlayerId: currentPlayerId, // used to find the current player
             giverId: 1, // used to make sure the giver gets shown different screens
+            selector: '#ultimatum', // the selector for the div containing this game
             players: [], // instances of the Player model
             currRound: 0,
             instructionRound: 0, // define which round number corresponds to which stage
@@ -62,14 +63,22 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
     ultimatum.start = function() {
         // starts the game
         $('#template-area').html(this.renderTemplate('#instructions-template', this.getCurrentPlayer()));
-        $('.btn').on('click', $.proxy(function(evt) {
-            this.nextRound();
-        }, this));
+
+        this.rebind();
+        var self = this;
+        $('.btn').on('click', function(evt) {
+            self.nextRound();
+            // make sure to unbind so not all buttons do this
+            $(this).off('click');
+        });
     };
 
     ultimatum.nextRound = function() {
+        var currentPlayer = this.getCurrentPlayer();
         if (this.currRound == this.instructionRound) {
-
+            if (currentPlayer.isGiver) {
+                $('#template-area').html(this.renderTemplate('#giver-form-template', this));
+            }
         } else if (this.currRound == this.givingRound) {
 
         } else if (this.currRound == this.receivingRound) {
@@ -80,6 +89,15 @@ var Ultimatum = function(numPlayers, totalAmount, currentPlayerId) {
             throw 'Unknown round ' + this.currRound;
         }
         this.currRound = this.currRound + 1;
+        $(this.selector).trigger('nextRound');
+    }
+
+    ultimatum.rebind = function() {
+        // rebind things when DOM changes, usually round change
+        $('a[href="#null"]').off('click');
+        $('a[href="#null"]').on('click', function(evt) {
+            evt.preventDefault();
+        });
     }
 
     ultimatum.numPlayers = function() { return ultimatum.players.length; };

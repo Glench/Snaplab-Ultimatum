@@ -11,7 +11,7 @@
     </head>
 
     <body>
-        <div class="container">
+        <div id="ultimatum" class="container">
 
             <noscript>
                 <div class="alert alert-error">You cannot play this game because JavaScript is disabled.</div>
@@ -25,21 +25,32 @@
             <h1>Hi!</h1>
             {% if (isGiver) { %}
                 <p>In this game, you have a number of points. You can divvy them up however you'd like between all the players including yourself. If the majority of the players accept your offer, everyone gets what you offered. If they don't vote in favor, then no one gets anything.</p>
-                <a class="btn btn-primary">I understand</a>
+                <a class="btn btn-primary" href="#null">I understand</a>
             {% } else { %}
+                <p>In this game, another player has a number of points. They can divvy them up however they'd like between all the players including yourself. If the majority of the players accept their offer, everyone gets what that player offered them. If the majority don't accept their offer, then no one gets anything.</p>
+
+                <div class="progress progress-striped active well">
+                    <div class="bar" style="width: 100%;"></div>
+                    <h4>Please wait while the other player divvies up the points.</h4>
+                </div>
             {% } %}
         </script>
+
         <script type="text/x-underscore-template" id="giver-form-template">
             <div id="giver-form" class="well">
-                <h2>You have {{ total_amount }}. How many do you want to give to each player?</h2>
+                <h2>You have {{ totalAmount }}. How many do you want to give to each player?</h2>
                 <form action class="form-inline">
                     {% _.each(players, function(player) { %}
                         {% if (player.id === 1) { %}
-                            <input type="text" name="{{ player.id }}" placeholder="You"/>
+                            <div class="control-group">
+                                <input type="text" name="{{ player.id }}" placeholder="You"/>
+                            </div>
                         {% } else { %}
-                            <input type="text" name="{{ player.id }}" placeholder="Player {{ player.id }}"/>
+                            <div class="control-group">
+                                <input type="text" name="{{ player.id }}" placeholder="Player {{ player.id }}"/>
+                            </div>
                         {% } %}
-                    {% }}); %}
+                    {% }); %}
 
                     <div class="form-actions">
                         <a href="#null" class="btn btn-secondary">Clear</a>
@@ -79,9 +90,6 @@
         <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
         <script type="text/javascript" src="ultimatum.js"></script>
         <script type="text/javascript">
-            $('a[href="#null"]').on('click', function(evt) {
-                evt.preventDefault();
-            });
             _.templateSettings = {
                 interpolate: /\{\{(.+?)\}\}/g,
                 evaluate: /\{\%(.+?)\%\}/g
@@ -99,6 +107,17 @@
             function newMove(participantId, index) {
 
             };
+            // do all the event bindings here and not in Ultimatum so as not to
+            // pollute Ultimatum with a bunch of magic global variables
+            var $ultimatum = $(ultimatum.selector);
+
+            setRound = function(thing) {}; // TODO: remove this debugging
+            // change the round
+            $ultimatum.on('nextRound', function(evt) {
+                ultimatum.rebind();
+                setRound(ultimatum.currRound);
+            });
+
         </script>
     </body>
 </html>
