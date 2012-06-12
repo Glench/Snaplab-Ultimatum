@@ -146,17 +146,21 @@
             $ultimatum.on('givingRoundOver', function(evt) {
                 // submit all the values the giving player made
                 _.each(ultimatum.players, function(player) {
+                    // TODO: need to have correct ordering on these, can't rely
+                    // on submit because ajax requests could complete out
+                    // of order, probably cascade after each finishes
                     submit(player.amount);
                 });
                 ultimatum.nextRound()
             });
 
             $ultimatum.on('receivingRoundOver', function(evt) {
+                // show the results screen to all players
                 ultimatum.nextRound();
             });
 
             $ultimatum.on('resultsRoundOver', function(evt) {
-                // do quit code here
+                // the game is over :(
                 console.log('omg!')
             });
 
