@@ -33,7 +33,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                         return false;
                     }
 
-                    // make sure they aren't a giver and receiver by using
+                    // make sure they aren't a giver and receiver
                     // this is a not of xor
                     if (!(!player.isGiver !== !player.isReceiver)) {
                         return false;
@@ -60,6 +60,18 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                     this.acceptedOffer = false;
                 };
 
+                player.choiceSubmitValue = function() {
+                    // return 0 if this player has rejected their offer, 1 if
+                    // they have accepted their offer
+                    if (_.isNull(this.acceptedOffer)) {
+                        throw 'Trying to submit null accept/reject for player ' + this.id;
+                    } else if (this.acceptedOffer) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                };
+
                 player.getName = function() {
                     if (this.isCurrent) {
                         return 'You';
@@ -84,19 +96,30 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
         // starts the game
         $('#template-area').html(this.renderTemplate('#instructions-template', this.getCurrentPlayer()));
 
-        var self = this;
-        $('.btn').on('click', function(evt) {
-            evt.preventDefault();
-            self.nextRound();
-            // make sure to unbind so not all buttons do this
-            $(this).off('click');
-        });
+        if (this.getCurrentPlayer().isGiver) {
+            // bind start button to the next round for giving player
+            var self = this;
+            $('.btn').on('click', function(evt) {
+                evt.preventDefault();
+                self.nextRound();
+                // make sure to unbind so not all buttons do this
+                $(this).off('click');
+            });
+        } else {
+            // the screen doesn't change for the receivers, but the round
+            // number does, so both players will be in the giving round
+            this.nextRound();
+        }
     };
 
     ultimatum.nextRound = function() {
         var currentPlayer = this.getCurrentPlayer(),
             self = this;
-        if (this.currRound == this.instructionRound) {
+        this.currRound += 1;
+        $(this.selector).trigger('nextRound');
+
+        if (this.currRound == this.givingRound) {
+            console.log('receiving round starts!')
             // start giving round for giver while still showing instructions
             // for receivers
             if (currentPlayer.isGiver) {
@@ -139,7 +162,6 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                     // submit all player inputs
                     evt.preventDefault();
                     if (self.validate() && self.validatePlayers()) {
-                        self.getCurrentPlayer().acceptOffer();
                         $(self.selector).trigger('givingRoundOver');
                     } else {
                         $('input').trigger('change');
@@ -151,10 +173,14 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                     $('.player input').val('').trigger('change');
                 });
             }
-        } else if (this.currRound == this.givingRound) {
+        } else if (this.currRound == this.receivingRound) {
+            console.log('receiving round starts!')
             // move to receiving round
             var $templateArea = $('#template-area');
             $templateArea.html('<h1>Other players are evaluating their offers...</h1><div class="progress progress-striped active well"><div class="bar" style="width: 100%"></div></div>');
+            // obviously the giving player accepts their own offer, but don't
+            // submit this value to the backend because not needed
+            this.getGivingPlayer().acceptOffer();
 
             // show the receivers the other player moves as well as give
             // them an accept/reject form
@@ -167,6 +193,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                         var $receiverForm = $('#receiver-form');
                         $receiverForm.after(self.renderTemplate('#receiver-view-template', self.getCurrentPlayer()));
                         $receiverForm.remove();
+                        $(self.selector).trigger('submitChoice');
                     };
                     $('#accept').on('click', function(evt) {
                         evt.preventDefault();
@@ -183,16 +210,16 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
                     $templateArea.append(self.renderTemplate('#receiver-view-template', player));
                 }
             });
-        } else if (this.currRound == this.receivingRound) {
+        } else if (this.currRound == this.resultsRound) {
+            console.log('results round starts!')
             // the results screen
             $('#template-area').html(this.renderTemplate('#results-template', this));
+            // thank them and quit game
             setTimeout(function() {$(self.selector).trigger('resultsRoundOver')},
                 5*1000);
         } else {
             throw 'Unknown round ' + this.currRound;
         }
-        this.currRound += 1;
-        $(this.selector).trigger('nextRound');
     }
 
     ultimatum.numPlayers = function() { return ultimatum.players.length; };
@@ -200,6 +227,8 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
     ultimatum.getPlayer = function(id) { return ultimatum.players[id-1]; };
 
     ultimatum.getCurrentPlayer = function() { return this.getPlayer(this.currentPlayerId); };
+
+    ultimatum.getGivingPlayer = function() { return this.getPlayer(this.giverId); };
 
     ultimatum.calculatedTotal = function() {
         var total = 0, i;
@@ -243,6 +272,16 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
         for (var i=0; i < this.players.length; ++i) {
             player = this.players[i];
             if (!player.validate()) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    ultimatum.allOffersProcessed = function() {
+        // return false if any player has a null acceptedOffer attribute
+        for (var i = 0; i < this.players.length; ++i) {
+            if (_.isNull(this.players[i].acceptedOffer)) {
                 return false;
             }
         }

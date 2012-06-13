@@ -116,10 +116,40 @@
                 evaluate: /\{\%(.+?)\%\}/g
             };
 
+            // this will be useful
+            Array.prototype.asyncEach = function(iterator) {
+                var list    = this,
+                    n       = list.length,
+                    i       = -1,
+                    calls   = 0,
+                    looping = false;
+
+                var iterate = function() {
+                    calls -= 1;
+                    i += 1;
+                    if (i === n) return;
+                    iterator(list[i], resume);
+                };
+
+                var loop = function() {
+                    if (looping) return;
+                    looping = true;
+                    while (calls > 0) iterate();
+                    looping = false;
+                };
+
+                var resume = function() {
+                    calls += 1;
+                    if (typeof setTimeout === 'undefined') loop();
+                    else setTimeout(iterate, 1);
+                };
+                resume();
+            };
+
             // doing this globally even though it is evil
             ultimatum = null;
             function initialize() {
-                // var ultimatum = Ultimatum(numPlayers, variables.total_amount, myid);
+                // var ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
                 ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging
                 ultimatum.start();
             };
@@ -131,27 +161,71 @@
             setRound = function(thing) {}; // TODO: remove this debugging
 
             function newMove(participantId, index) {
+                console.log('new move received for player', participantId, 'index', index)
+                if (ultimatum.currRound == ultimatum.givingRound) {
+                    console.log('new move in giving round')
+                    // if we have received a move per player from the giving
+                    // player, then we have to update each player's amount with
+                    // the amount the giver gave them by fetching from the
+                    // giving player's moves
+                    fetchMove(ultimatum.giverId, ultimatum.currRound, index, function(val) {
+                        // trick here is that the giving player submits
+                        // numPlayers moves in the giving round, so each
+                        // player is given by the number of the giving player's
+                        // move
+                        var player = ultimatum.getPlayer(index);
+                        player.amount = val;
+                        console.log('new giving round value assigned to player', player.id, val)
 
+                        // if we received amounts for all players, we can move
+                        // on to the receiving round
+                        if (ultimatum.validate() && ultimatum.validatePlayers()) {
+                            ultimatum.nextRound();
+                        }
+                    });
+                } else if (ultimatum.currRound == ultimatum.receivingRound) {
+                    console.log('new move for receiving round')
+                    // we received an accept/reject from some player, so update
+                    // that player
+                    fetchMove(participantId, ultimatum.currRound, index, function(val) {
+                        var player = ultimatum.getPlayer(participantId);
+                        if (val == 0) {
+                            player.rejectOffer();
+                        } else {
+                            player.acceptOffer();
+                        }
+                        // if we received accepts/rejects from all players, we can
+                        // move on to the results round
+                        if (ultimatum.allOffersProcessed()) {
+                            ultimatum.nextRound();
+                        }
+                    });
+                }
             };
 
             // do all the event bindings here and not in Ultimatum so as not to
             // pollute Ultimatum with a bunch of magic global variables
             var $ultimatum = $(ultimatum.selector);
 
-            // change the round
+            // change the round, called when Ultimatum.nextRound() is called
             $ultimatum.on('nextRound', function(evt) {
                 setRound(ultimatum.currRound);
             });
 
             $ultimatum.on('givingRoundOver', function(evt) {
-                // submit all the values the giving player made
-                _.each(ultimatum.players, function(player) {
-                    // TODO: need to have correct ordering on these, can't rely
-                    // on submit because ajax requests could complete out
-                    // of order, probably cascade after each finishes
-                    submit(player.amount);
+                // submit all the values the giving player made, then advance
+                // to the next round. need to have correct ordering on these,
+                // can't rely on submit because ajax requests could complete out
+                // of order
+                ultimatum.players.asyncEach(function(player, resume) {
+                    submit(player.amount, resume);
                 });
                 ultimatum.nextRound()
+            });
+
+            $ultimatum.on('submitChoice', function(evt) {
+                // submit the current player's choice
+                submit(ultimatum.getCurrentPlayer().choiceSubmitValue());
             });
 
             $ultimatum.on('receivingRoundOver', function(evt) {
@@ -161,7 +235,7 @@
 
             $ultimatum.on('resultsRoundOver', function(evt) {
                 // the game is over :(
-                console.log('omg!')
+                window.location = window.location.hostname + '/stop_test/'
             });
 
         </script>
