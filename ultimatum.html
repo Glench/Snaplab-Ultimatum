@@ -1,243 +1,234 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Ultimatum game</title>
-        <link href="bootstrap.min.css" rel="stylesheet" />
-        <style type="text/css">
-            #receiver-form, .receiver-view {
-                text-align: center;
-                float: left;
-                width: 10%;
-                margin-right: 20px;
-            }
-            #receiver-form .alert, .receiver-view .alert {
-                padding-right: 14px;
-            }
-        </style>
-    </head>
+<link href="bootstrap.min.css" rel="stylesheet" />
+<style type="text/css">
+    #receiver-form, .receiver-view {
+        text-align: center;
+        float: left;
+        width: 10%;
+        margin-right: 20px;
+    }
+    #receiver-form .alert, .receiver-view .alert {
+        padding-right: 14px;
+    }
+</style>
+<div id="ultimatum" class="container">
 
-    <body>
-        <div id="ultimatum" class="container">
+    <noscript>
+        <div class="alert alert-error">You cannot play this game because JavaScript is disabled.</div>
+    </noscript>
+    <div id="template-area">
+        <!-- where the templates are rendered -->
+    </div>
+</div>
 
-            <noscript>
-                <div class="alert alert-error">You cannot play this game because JavaScript is disabled.</div>
-            </noscript>
-            <div id="template-area">
-                <!-- where the templates are rendered -->
-            </div>
+<script type="text/x-underscore-template" id="instructions-template">
+    <h1>Hi!</h1>
+    {% if (isGiver) { %}
+        <p>In this game, you have a number of points. You can divvy them up however you'd like between all the players including yourself. If the majority of the players accept your offer, everyone gets what you offered. If they don't vote in favor, then no one gets anything.</p>
+        <a class="btn btn-primary" href="#null">I understand&mdash;Start the game!</a>
+    {% } else { %}
+        <p>In this game, another player has a number of points. They can divvy them up however they'd like between all the players including yourself. If the majority of the players accept their offer, everyone gets what that player offered them. If the majority don't accept their offer, then no one gets anything.</p>
+
+        <div class="progress progress-striped active well">
+            <div class="bar" style="width: 100%;"></div>
+            <h4>Please wait while the other player divvies up the points.</h4>
         </div>
+    {% } %}
+</script>
 
-        <script type="text/x-underscore-template" id="instructions-template">
-            <h1>Hi!</h1>
-            {% if (isGiver) { %}
-                <p>In this game, you have a number of points. You can divvy them up however you'd like between all the players including yourself. If the majority of the players accept your offer, everyone gets what you offered. If they don't vote in favor, then no one gets anything.</p>
-                <a class="btn btn-primary" href="#null">I understand&mdash;Start the game!</a>
+<script type="text/x-underscore-template" id="giver-form-template">
+    <div id="giver-form" class="well">
+        <h2>You have <span id="totalAmount">{{ totalAmount }}</span>. How many do you want to give to each player?</h2>
+        <form action="">
+            {% _.each(players, function(player) { %}
+                <div class="player control-group" playerid="{{ player.id }}">
+                    <label class="control-label">{{ player.getName() }}:</label>
+                    <input type="text" name="{{ player.id }}" />
+                    <span class="help-inline">Enter an amount to give to this player</span>
+                </div>
+            {% }); %}
+
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Amount left:</h4> <span id="calculatedAmount">{{ totalAmount }}</span>
+            </div>
+
+            <div class="form-actions">
+                <a href="#null" class="btn btn-secondary">Clear</a>
+                <a href="#null" class="btn btn-primary">Done</a>
+            </div>
+        </form>
+    </div>
+</script>
+
+<!-- what the receiver sees when the giver is done and the receiver has to accept or reject -->
+<script type="text/x-underscore-template" id="receiver-form-template">
+    <div id="receiver-form" class=" receiver-view">
+        <div class="alert alert-info">
+            <h3>{{ getName() }}</h3>
+            <h2>{{ amount }}</h2>
+            <form action>
+                <div style=""><a href="#null" id="accept" class="btn btn-primary">Accept</a></div>
+                <div>or</div>
+                <div><a href="#null" id="reject" class="btn btn-primary">Reject</a></div>
+            </form>
+        </div>
+    </div>
+</script>
+
+<!-- what the receiver sees both after he/she chooses for him/herself and what they see for the other players -->
+<script type="text/x-underscore-template" id="receiver-view-template">
+    <div class="receiver-view" id="{{ id }}">
+            {% if (_.isNull(acceptedOffer)) { %}
+        <div class="alert alert-info">
+            {% } else if (acceptedOffer) { %}
+        <div class="alert alert-success">
             {% } else { %}
-                <p>In this game, another player has a number of points. They can divvy them up however they'd like between all the players including yourself. If the majority of the players accept their offer, everyone gets what that player offered them. If the majority don't accept their offer, then no one gets anything.</p>
-
-                <div class="progress progress-striped active well">
-                    <div class="bar" style="width: 100%;"></div>
-                    <h4>Please wait while the other player divvies up the points.</h4>
-                </div>
+        <div class="alert alert-error">
             {% } %}
-        </script>
+            <h3>{{ getName() }}</h3>
+            <h2>{{ amount }}</h2>
+        </div>
+    </div>
+</script>
 
-        <script type="text/x-underscore-template" id="giver-form-template">
-            <div id="giver-form" class="well">
-                <h2>You have <span id="totalAmount">{{ totalAmount }}</span>. How many do you want to give to each player?</h2>
-                <form action="">
-                    {% _.each(players, function(player) { %}
-                        <div class="player control-group" playerid="{{ player.id }}">
-                            <label class="control-label">{{ player.getName() }}:</label>
-                            <input type="text" name="{{ player.id }}" />
-                            <span class="help-inline">Enter an amount to give to this player</span>
-                        </div>
-                    {% }); %}
+<!-- the screen for the end result of the game -->
+<script type="text/x-underscore-template" id="results-template">
+    {% if (enoughAccepted()) { %}
+        <div class="alert alert-success"><h1>Congratulations! :D A majority of offers were accepted!</h1></div>
+    {% } else { %}
+        <div class="alert alert-error"><h1>Aw, no one gets anything :(</h1></div>
+    {% } %}
+    <p>Thanks for playing! You will be forwarded momentarily.</p>
+</script>
 
-                    <div class="alert alert-info">
-                        <h4 class="alert-heading">Amount left:</h4> <span id="calculatedAmount">{{ totalAmount }}</span>
-                    </div>
+<script type="text/javascript" src="underscore-min.js"></script>
+<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="ultimatum.js"></script>
+<script type="text/javascript">
+    _.templateSettings = {
+        interpolate: /\{\{(.+?)\}\}/g,
+        evaluate: /\{\%(.+?)\%\}/g
+    };
 
-                    <div class="form-actions">
-                        <a href="#null" class="btn btn-secondary">Clear</a>
-                        <a href="#null" class="btn btn-primary">Done</a>
-                    </div>
-                </form>
-            </div>
-        </script>
+    // this will be useful
+    Array.prototype.asyncEach = function(iterator) {
+        var list    = this,
+            n       = list.length,
+            i       = -1,
+            calls   = 0,
+            looping = false;
 
-        <!-- what the receiver sees when the giver is done and the receiver has to accept or reject -->
-        <script type="text/x-underscore-template" id="receiver-form-template">
-            <div id="receiver-form" class=" receiver-view">
-                <div class="alert alert-info">
-                    <h3>{{ getName() }}</h3>
-                    <h2>{{ amount }}</h2>
-                    <form action>
-                        <div style=""><a href="#null" id="accept" class="btn btn-primary">Accept</a></div>
-                        <div>or</div>
-                        <div><a href="#null" id="reject" class="btn btn-primary">Reject</a></div>
-                    </form>
-                </div>
-            </div>
-        </script>
+        var iterate = function() {
+            calls -= 1;
+            i += 1;
+            if (i === n) return;
+            iterator(list[i], resume);
+        };
 
-        <!-- what the receiver sees both after he/she chooses for him/herself and what they see for the other players -->
-        <script type="text/x-underscore-template" id="receiver-view-template">
-            <div class="receiver-view" id="{{ id }}">
-                    {% if (_.isNull(acceptedOffer)) { %}
-                <div class="alert alert-info">
-                    {% } else if (acceptedOffer) { %}
-                <div class="alert alert-success">
-                    {% } else { %}
-                <div class="alert alert-error">
-                    {% } %}
-                    <h3>{{ getName() }}</h3>
-                    <h2>{{ amount }}</h2>
-                </div>
-            </div>
-        </script>
+        var loop = function() {
+            if (looping) return;
+            looping = true;
+            while (calls > 0) iterate();
+            looping = false;
+        };
 
-        <!-- the screen for the end result of the game -->
-        <script type="text/x-underscore-template" id="results-template">
-            {% if (enoughAccepted()) { %}
-                <div class="alert alert-success"><h1>Congratulations! :D A majority of offers were accepted!</h1></div>
-            {% } else { %}
-                <div class="alert alert-error"><h1>Aw, no one gets anything :(</h1></div>
-            {% } %}
-            <p>Thanks for playing! You will be forwarded momentarily.</p>
-        </script>
+        var resume = function() {
+            calls += 1;
+            if (typeof setTimeout === 'undefined') loop();
+            else setTimeout(iterate, 1);
+        };
+        resume();
+    };
 
-        <script type="text/javascript" src="underscore-min.js"></script>
-        <script type="text/javascript" src="jquery-1.7.2.min.js"></script>
-        <script type="text/javascript" src="ultimatum.js"></script>
-        <script type="text/javascript">
-            _.templateSettings = {
-                interpolate: /\{\{(.+?)\}\}/g,
-                evaluate: /\{\%(.+?)\%\}/g
-            };
+    // doing this globally even though it is evil
+    ultimatum = null;
+    function initialize() {
+        var ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
+        /*ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging*/
+        ultimatum.start();
+    };
 
-            // this will be useful
-            Array.prototype.asyncEach = function(iterator) {
-                var list    = this,
-                    n       = list.length,
-                    i       = -1,
-                    calls   = 0,
-                    looping = false;
+    /*initialize(); // TODO: remove this after debugging*/
+    /*function submit(thing) { */
+    /*    // TODO: remove this after debugging */
+    /*}*/
+    /*setRound = function(thing) {}; // TODO: remove this debugging*/
 
-                var iterate = function() {
-                    calls -= 1;
-                    i += 1;
-                    if (i === n) return;
-                    iterator(list[i], resume);
-                };
+    function newMove(participantId, index) {
+        console.log('new move received for player', participantId, 'index', index)
+        if (ultimatum.currRound == ultimatum.givingRound) {
+            console.log('new move in giving round')
+            // if we have received a move per player from the giving
+            // player, then we have to update each player's amount with
+            // the amount the giver gave them by fetching from the
+            // giving player's moves
+            fetchMove(ultimatum.giverId, ultimatum.currRound, index, function(val) {
+                // trick here is that the giving player submits
+                // numPlayers moves in the giving round, so each
+                // player is given by the number of the giving player's
+                // move
+                var player = ultimatum.getPlayer(index);
+                player.amount = val;
+                console.log('new giving round value assigned to player', player.id, val)
 
-                var loop = function() {
-                    if (looping) return;
-                    looping = true;
-                    while (calls > 0) iterate();
-                    looping = false;
-                };
-
-                var resume = function() {
-                    calls += 1;
-                    if (typeof setTimeout === 'undefined') loop();
-                    else setTimeout(iterate, 1);
-                };
-                resume();
-            };
-
-            // doing this globally even though it is evil
-            ultimatum = null;
-            function initialize() {
-                // var ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
-                ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging
-                ultimatum.start();
-            };
-
-            initialize(); // TODO: remove this after debugging
-            function submit(thing) { 
-                // TODO: remove this after debugging 
-            }
-            setRound = function(thing) {}; // TODO: remove this debugging
-
-            function newMove(participantId, index) {
-                console.log('new move received for player', participantId, 'index', index)
-                if (ultimatum.currRound == ultimatum.givingRound) {
-                    console.log('new move in giving round')
-                    // if we have received a move per player from the giving
-                    // player, then we have to update each player's amount with
-                    // the amount the giver gave them by fetching from the
-                    // giving player's moves
-                    fetchMove(ultimatum.giverId, ultimatum.currRound, index, function(val) {
-                        // trick here is that the giving player submits
-                        // numPlayers moves in the giving round, so each
-                        // player is given by the number of the giving player's
-                        // move
-                        var player = ultimatum.getPlayer(index);
-                        player.amount = val;
-                        console.log('new giving round value assigned to player', player.id, val)
-
-                        // if we received amounts for all players, we can move
-                        // on to the receiving round
-                        if (ultimatum.validate() && ultimatum.validatePlayers()) {
-                            ultimatum.nextRound();
-                        }
-                    });
-                } else if (ultimatum.currRound == ultimatum.receivingRound) {
-                    console.log('new move for receiving round')
-                    // we received an accept/reject from some player, so update
-                    // that player
-                    fetchMove(participantId, ultimatum.currRound, index, function(val) {
-                        var player = ultimatum.getPlayer(participantId);
-                        if (val == 0) {
-                            player.rejectOffer();
-                        } else {
-                            player.acceptOffer();
-                        }
-                        // if we received accepts/rejects from all players, we can
-                        // move on to the results round
-                        if (ultimatum.allOffersProcessed()) {
-                            ultimatum.nextRound();
-                        }
-                    });
+                // if we received amounts for all players, we can move
+                // on to the receiving round
+                if (ultimatum.validate() && ultimatum.validatePlayers()) {
+                    ultimatum.nextRound();
                 }
-            };
-
-            // do all the event bindings here and not in Ultimatum so as not to
-            // pollute Ultimatum with a bunch of magic global variables
-            var $ultimatum = $(ultimatum.selector);
-
-            // change the round, called when Ultimatum.nextRound() is called
-            $ultimatum.on('nextRound', function(evt) {
-                setRound(ultimatum.currRound);
             });
-
-            $ultimatum.on('givingRoundOver', function(evt) {
-                // submit all the values the giving player made, then advance
-                // to the next round. need to have correct ordering on these,
-                // can't rely on submit because ajax requests could complete out
-                // of order
-                ultimatum.players.asyncEach(function(player, resume) {
-                    submit(player.amount, resume);
-                });
-                ultimatum.nextRound()
+        } else if (ultimatum.currRound == ultimatum.receivingRound) {
+            console.log('new move for receiving round')
+            // we received an accept/reject from some player, so update
+            // that player
+            fetchMove(participantId, ultimatum.currRound, index, function(val) {
+                var player = ultimatum.getPlayer(participantId);
+                if (val == 0) {
+                    player.rejectOffer();
+                } else {
+                    player.acceptOffer();
+                }
+                // if we received accepts/rejects from all players, we can
+                // move on to the results round
+                if (ultimatum.allOffersProcessed()) {
+                    ultimatum.nextRound();
+                }
             });
+        }
+    };
 
-            $ultimatum.on('submitChoice', function(evt) {
-                // submit the current player's choice
-                submit(ultimatum.getCurrentPlayer().choiceSubmitValue());
-            });
+    // do all the event bindings here and not in Ultimatum so as not to
+    // pollute Ultimatum with a bunch of magic global variables
+    var $ultimatum = $(ultimatum.selector);
 
-            $ultimatum.on('receivingRoundOver', function(evt) {
-                // show the results screen to all players
-                ultimatum.nextRound();
-            });
+    // change the round, called when Ultimatum.nextRound() is called
+    $ultimatum.on('nextRound', function(evt) {
+        setRound(ultimatum.currRound);
+    });
 
-            $ultimatum.on('resultsRoundOver', function(evt) {
-                // the game is over :(
-                window.location = window.location.hostname + '/stop_test/'
-            });
+    $ultimatum.on('givingRoundOver', function(evt) {
+        // submit all the values the giving player made, then advance
+        // to the next round. need to have correct ordering on these,
+        // can't rely on submit because ajax requests could complete out
+        // of order
+        ultimatum.players.asyncEach(function(player, resume) {
+            submit(player.amount, resume);
+        });
+        ultimatum.nextRound()
+    });
 
-        </script>
-    </body>
-</html>
+    $ultimatum.on('submitChoice', function(evt) {
+        // submit the current player's choice
+        submit(ultimatum.getCurrentPlayer().choiceSubmitValue());
+    });
+
+    $ultimatum.on('receivingRoundOver', function(evt) {
+        // show the results screen to all players
+        ultimatum.nextRound();
+    });
+
+    $ultimatum.on('resultsRoundOver', function(evt) {
+        // the game is over :(
+        window.location = window.location.hostname + '/stop_test/'
+    });
+
+</script>
