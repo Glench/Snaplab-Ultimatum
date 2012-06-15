@@ -100,9 +100,6 @@
     <p>Thanks for playing! You will be forwarded momentarily.</p>
 </script>
 
-<script type="text/javascript" src="underscore-min.js"></script>
-<script type="text/javascript" src="jquery-1.7.2.min.js"></script>
-<script type="text/javascript" src="ultimatum.js"></script>
 <script type="text/javascript">
     _.templateSettings = {
         interpolate: /\{\{(.+?)\}\}/g,
@@ -142,9 +139,45 @@
     // doing this globally even though it is evil
     ultimatum = null;
     function initialize() {
-        var ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
+        ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
         /*ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging*/
         ultimatum.start();
+
+        // do all the event bindings here and not in Ultimatum so as not to
+        // pollute Ultimatum with a bunch of magic global variables
+        var $ultimatum = $(ultimatum.selector);
+
+        // change the round, called when Ultimatum.nextRound() is called
+        $ultimatum.on('nextRound', function(evt) {
+            setRound(ultimatum.currRound);
+        });
+
+        $ultimatum.on('givingRoundOver', function(evt) {
+            // submit all the values the giving player made, then advance
+            // to the next round. need to have correct ordering on these,
+            // can't rely on submit because ajax requests could complete out
+            // of order
+            ultimatum.players.asyncEach(function(player, resume) {
+                submit(player.amount, resume);
+            });
+            ultimatum.nextRound()
+        });
+
+        $ultimatum.on('submitChoice', function(evt) {
+            // submit the current player's choice
+            submit(ultimatum.getCurrentPlayer().choiceSubmitValue());
+        });
+
+        $ultimatum.on('receivingRoundOver', function(evt) {
+            // show the results screen to all players
+            ultimatum.nextRound();
+        });
+
+        $ultimatum.on('resultsRoundOver', function(evt) {
+            // the game is over :(
+            window.location = window.location.hostname + '/stop_test/'
+        });
+
     };
 
     /*initialize(); // TODO: remove this after debugging*/
@@ -195,40 +228,5 @@
             });
         }
     };
-
-    // do all the event bindings here and not in Ultimatum so as not to
-    // pollute Ultimatum with a bunch of magic global variables
-    var $ultimatum = $(ultimatum.selector);
-
-    // change the round, called when Ultimatum.nextRound() is called
-    $ultimatum.on('nextRound', function(evt) {
-        setRound(ultimatum.currRound);
-    });
-
-    $ultimatum.on('givingRoundOver', function(evt) {
-        // submit all the values the giving player made, then advance
-        // to the next round. need to have correct ordering on these,
-        // can't rely on submit because ajax requests could complete out
-        // of order
-        ultimatum.players.asyncEach(function(player, resume) {
-            submit(player.amount, resume);
-        });
-        ultimatum.nextRound()
-    });
-
-    $ultimatum.on('submitChoice', function(evt) {
-        // submit the current player's choice
-        submit(ultimatum.getCurrentPlayer().choiceSubmitValue());
-    });
-
-    $ultimatum.on('receivingRoundOver', function(evt) {
-        // show the results screen to all players
-        ultimatum.nextRound();
-    });
-
-    $ultimatum.on('resultsRoundOver', function(evt) {
-        // the game is over :(
-        window.location = window.location.hostname + '/stop_test/'
-    });
 
 </script>
