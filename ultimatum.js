@@ -231,13 +231,13 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
     ultimatum.getGivingPlayer = function() { return this.getPlayer(this.giverId); };
 
     ultimatum.calculatedTotal = function() {
-        var total = 0, i;
-        for (i = 0; i < ultimatum.numPlayers(); ++i) {
-            if (ultimatum.players[i].amount) {
-                total += ultimatum.players[i].amount;
+        // figure out the total amount for players
+        return _.reduce(ultimatum.players, function(memo, player) {
+            if (player.amount) {
+                return player.amount + memo;
             }
-        }
-        return total;
+            return memo;
+        }, 0);
     };
 
     ultimatum.enoughAccepted = function() {

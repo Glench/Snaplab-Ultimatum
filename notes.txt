@@ -25,3 +25,8 @@ Things that could be done:
 - get a bunch of people from all over the world to play (to test cultural differences)
 - vary graphical parameters of the game to see if it makes a difference, or give other functionality like "split evenly" button to see if they do that more
 - possibly add the ability for some people to see other players' moves and others to be blind to other amounts / offers
+
+Things I did for snaplab code:
+- document api
+- add callback for submit function
+- escape rendered html
