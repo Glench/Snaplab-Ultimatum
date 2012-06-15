@@ -243,15 +243,13 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
     ultimatum.enoughAccepted = function() {
         // returns true if the percent accepting is above the percent needed
         // for a success
-        var totalAccepted = 0,
-            percentAccepted,
-            player;
-        for (var i = 0; i < this.players.length; ++i) {
-            player = this.players[i];
+        var totalAccepted = _.reduce(this.players, function(player) {
             if (player.acceptedOffer) {
-                totalAccepted += 1;
+                return 1;
+            } else {
+                return 0;
             }
-        }
+        }, 0);
         return (totalAccepted / this.players.length) > this.percentNeeded;
 
     }
@@ -272,12 +270,9 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
 
     ultimatum.allOffersProcessed = function() {
         // return false if any player has a null acceptedOffer attribute
-        for (var i = 0; i < this.players.length; ++i) {
-            if (_.isNull(this.players[i].acceptedOffer)) {
-                return false;
-            }
-        }
-        return true;
+        return _.all(this.players, function(player) {
+            return !_.isNull(player.acceptedOffer)
+        });
     };
 
     ultimatum.renderTemplate = function(selector, params) {
