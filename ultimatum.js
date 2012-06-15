@@ -259,23 +259,15 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
     ultimatum.validate = function() {
         // have to validate they didn't put an amount over the total that they
         // were allowed to put
-        if (ultimatum.calculatedTotal() != ultimatum.totalAmount) {
-            return false;
-        }
-        return true;
+        return ultimatum.calculatedTotal() == ultimatum.totalAmount;
     };
 
     ultimatum.validatePlayers = function() {
         // have to validate they didn't put an amount over the total that they
         // were allowed to put
-        var player;
-        for (var i=0; i < this.players.length; ++i) {
-            player = this.players[i];
-            if (!player.validate()) {
-                return false;
-            }
-        }
-        return true;
+        return _.all(this.players, function(player) {
+            return player.validate();
+        });
     };
 
     ultimatum.allOffersProcessed = function() {
