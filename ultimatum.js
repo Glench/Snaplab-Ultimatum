@@ -243,16 +243,15 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
     ultimatum.enoughAccepted = function() {
         // returns true if the percent accepting is above the percent needed
         // for a success
-        var totalAccepted = _.reduce(this.players, function(player) {
+        var totalAccepted = _.reduce(this.players, function(memo, player) {
             if (player.acceptedOffer) {
-                return 1;
-            } else {
-                return 0;
+                return 1 + memo;
             }
+            return memo;
         }, 0);
         return (totalAccepted / this.players.length) > this.percentNeeded;
 
-    }
+    };
 
     ultimatum.validate = function() {
         // have to validate they didn't put an amount over the total that they
