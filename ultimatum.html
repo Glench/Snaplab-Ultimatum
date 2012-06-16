@@ -139,6 +139,7 @@
     // doing this globally even though it is evil
     ultimatum = null;
     function initialize() {
+        console.log(numPlayers, variables, myid)
         ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
         /*ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging*/
         ultimatum.start();

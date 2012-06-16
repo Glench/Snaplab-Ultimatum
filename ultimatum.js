@@ -3,7 +3,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
     // This also requires running with a proprietary framework called SnapLab
     // that has a very dumb API based on globally-defined functions and
     // variables, so instead of calling that code directly from here, I just
-    // events.
+    // fire events.
     //
     // requires jQuery and underscore.js
 
