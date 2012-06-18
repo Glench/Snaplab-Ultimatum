@@ -163,7 +163,7 @@
             // of order
             console.log('giving round over, submitting values...')
             ultimatum.players.asyncEach(function(player, resume) {
-                console.log('round', ultimatum.currRound, ', submitting val', player.amount, 'for player', player)
+                console.log('round', ultimatum.currRound, ', submitting val', player.amount, 'for player', player.id)
                 submit(player.amount, resume);
             }, ultimatum.nextRound, ultimatum);
         });
