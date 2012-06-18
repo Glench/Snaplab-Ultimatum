@@ -230,7 +230,12 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
 
     ultimatum.numPlayers = function() { return ultimatum.players.length; };
 
-    ultimatum.getPlayer = function(id) { return ultimatum.players[id-1]; };
+    ultimatum.getPlayer = function(id) {
+        if (id > this.numPlayers || id < 1) {
+            throw 'Invalid id for getPlayer function';
+        }
+        return ultimatum.players[id-1];
+    };
 
     ultimatum.getCurrentPlayer = function() { return this.getPlayer(this.currentPlayerId); };
 

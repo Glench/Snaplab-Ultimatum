@@ -1,4 +1,5 @@
 <style type="text/css">
+    #template-area { width: 80%; }
     #receiver-form, .receiver-view {
         text-align: center;
         float: left;
@@ -106,7 +107,7 @@
     };
 
     // this will be useful
-    Array.prototype.asyncEach = function(iterator) {
+    Array.prototype.asyncEach = function(iterator, endCallback, thisArg) {
         var list    = this,
             n       = list.length,
             i       = -1,
@@ -116,7 +117,12 @@
         var iterate = function() {
             calls -= 1;
             i += 1;
-            if (i === n) return;
+            if (i === n) {
+                if (endCallback) {
+                    endCallback.call(thisArg);
+                }
+                return;
+            }
             iterator(list[i], resume);
         };
 
@@ -138,7 +144,7 @@
     // doing this globally even though it is evil
     ultimatum = null;
     function initialize() {
-        ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
+        ultimatum = Ultimatum(numPlayers, variables.total_amount, parseFloat(variables.percent_needed), myid);
 
         // do all the event bindings here and not in Ultimatum so as not to
         // pollute Ultimatum with a bunch of magic global variables
@@ -159,8 +165,7 @@
             ultimatum.players.asyncEach(function(player, resume) {
                 console.log('round', ultimatum.currRound, ', submitting val', player.amount, 'for player', player)
                 submit(player.amount, resume);
-            });
-            ultimatum.nextRound()
+            }, ultimatum.nextRound, ultimatum);
         });
 
         $ultimatum.on('submitChoice', function(evt) {
@@ -203,8 +208,8 @@
                 // numPlayers moves in the giving round, so each
                 // player is given by the number of the giving player's
                 // move
-                var player = ultimatum.getPlayer(index);
-                player.amount = val;
+                var player = ultimatum.getPlayer(index+1);
+                player.amount = parseInt(val);
                 console.log('new giving round value assigned to player', player.id, val)
 
                 // if we received amounts for all players, we can move
@@ -219,6 +224,7 @@
             // that player
             fetchMove(participantId, ultimatum.currRound, index, function(val) {
                 var player = ultimatum.getPlayer(participantId);
+                val = parseInt(val);
                 if (val == 0) {
                     player.rejectOffer();
                 } else {
