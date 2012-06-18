@@ -254,7 +254,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
             }
             return memo;
         }, 0);
-        return (totalAccepted / this.players.length) > this.percentNeeded;
+        return (totalAccepted / this.numPlayers()) > this.percentNeeded;
 
     };
 

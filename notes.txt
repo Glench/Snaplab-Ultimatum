@@ -25,6 +25,11 @@ Things that could be done:
 - get a bunch of people from all over the world to play (to test cultural differences)
 - vary graphical parameters of the game to see if it makes a difference, or give other functionality like "split evenly" button to see if they do that more
 - possibly add the ability for some people to see other players' moves and others to be blind to other amounts / offers
+- either see or not see other players' decision
+- either see or not see other players' offers
+- make offers sequential? we can ask about that
+- how to abstract this for other templates
+- I do need to write a report
 
 Things I did for snaplab code:
 - document api
