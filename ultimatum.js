@@ -113,6 +113,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
         } else {
             // the screen doesn't change for the receivers, but the round
             // number does, so both players will be in the giving round
+            console.log('starting giving round for receiving player')
             this.nextRound();
         }
     };
@@ -124,7 +125,7 @@ var Ultimatum = function(numPlayers, totalAmount, percentNeeded, currentPlayerId
         $(this.selector).trigger('nextRound');
 
         if (this.currRound == this.givingRound) {
-            console.log('receiving round starts!')
+            console.log('giving round starts!')
             // start giving round for giver while still showing instructions
             // for receivers
             if (currentPlayer.isGiver) {

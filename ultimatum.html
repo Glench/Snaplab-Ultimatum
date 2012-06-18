@@ -138,10 +138,7 @@
     // doing this globally even though it is evil
     ultimatum = null;
     function initialize() {
-        console.log(numPlayers, variables, myid)
         ultimatum = Ultimatum(numPlayers, variables.total_amount, variables.percent_needed, myid);
-        /*ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging*/
-        ultimatum.start();
 
         // do all the event bindings here and not in Ultimatum so as not to
         // pollute Ultimatum with a bunch of magic global variables
@@ -149,6 +146,7 @@
 
         // change the round, called when Ultimatum.nextRound() is called
         $ultimatum.on('nextRound', function(evt) {
+            console.log('marking next round for snaplab as', ultimatum.currRound)
             setRound(ultimatum.currRound);
         });
 
@@ -157,7 +155,9 @@
             // to the next round. need to have correct ordering on these,
             // can't rely on submit because ajax requests could complete out
             // of order
+            console.log('giving round over, submitting values...')
             ultimatum.players.asyncEach(function(player, resume) {
+                console.log('round', ultimatum.currRound, ', submitting val', player.amount, 'for player', player)
                 submit(player.amount, resume);
             });
             ultimatum.nextRound()
@@ -175,8 +175,12 @@
 
         $ultimatum.on('resultsRoundOver', function(evt) {
             // the game is over :(
-            window.location = window.location.hostname + '/stop_test/'
+            window.location = '/stop_test/';
         });
+
+        /*ultimatum = Ultimatum(2, 10, .5, 1); // TODO: remove this after debugging*/
+        // now that all bindings have been taken care of, start the game
+        ultimatum.start();
 
     };
 
