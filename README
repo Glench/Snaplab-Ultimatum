@@ -11,25 +11,18 @@ some or all of the players can view what the other recipients were
 offered and their responses in real time. Possibly any of these
 players could be robots, too.
 
-- have to define newMove, call submit and setround, and initialize
-- update api docs with fetchMove, currentRound
-- figure out how moves/rounds are going to work
-    - first round is giver round (0), makes n moves when done (+1 for accepting their own offer on next round)
-    - after receiving n newmoves, fetch each move by round=0, participant = 1, index = 0..n and update each player (get by index+1) (set ultimatum.givingRound to start round, ultimatum.giverId to 1)
-    - send move when giver goes past instruction round so other players know to switch to next round
-
 Things that could be done:
 
 - write bots to play
 - make this only a one-player game with contrived situations for the giver or receiver
 - get a bunch of people from all over the world to play (to test cultural differences)
 - vary graphical parameters of the game to see if it makes a difference, or give other functionality like "split evenly" button to see if they do that more
-- possibly add the ability for some people to see other players' moves and others to be blind to other amounts / offers
-- either see or not see other players' decision
+- either see or not see other players' decisions
 - either see or not see other players' offers
 - make offers sequential? we can ask about that
 - how to abstract this for other templates
 - I do need to write a report
+- Make functionality for when a player drops out
 
 Things I did for snaplab code:
 - document api
