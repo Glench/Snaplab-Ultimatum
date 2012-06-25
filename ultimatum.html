@@ -47,7 +47,7 @@
                 </div>
             {% }); %}
 
-            <div class="alert alert-info">
+            <div class="alert alert-info" style="positon: fixed; right: 25%; top: 190px;">
                 <h4 class="alert-heading">Amount left:</h4> <span id="calculatedAmount">{{ totalAmount }}</span>
             </div>
 
@@ -152,7 +152,7 @@
 
         // change the round, called when Ultimatum.nextRound() is called
         $ultimatum.on('nextRound', function(evt) {
-            console.log('marking next round for snaplab as', ultimatum.currRound)
+            /*console.log('marking next round for snaplab as', ultimatum.currRound)*/
             setRound(ultimatum.currRound);
         });
 
@@ -161,9 +161,9 @@
             // to the next round. need to have correct ordering on these,
             // can't rely on submit because ajax requests could complete out
             // of order
-            console.log('giving round over, submitting values...')
+            /*console.log('giving round over, submitting values...')*/
             ultimatum.players.asyncEach(function(player, resume) {
-                console.log('round', ultimatum.currRound, ', submitting val', player.amount, 'for player', player.id)
+                /*console.log('round', ultimatum.currRound, ', submitting val', player.amount, 'for player', player.id)*/
                 submit(player.amount, resume);
             }, ultimatum.nextRound, ultimatum);
         });
@@ -196,9 +196,9 @@
     /*setRound = function(thing) {}; // TODO: remove this debugging*/
 
     function newMove(participantId, index) {
-        console.log('new move received for player', participantId, 'index', index)
+        /*console.log('new move received for player', participantId, 'index', index)*/
         if (ultimatum.currRound == ultimatum.givingRound) {
-            console.log('new move in giving round')
+            /*console.log('new move in giving round')*/
             // if we have received a move per player from the giving
             // player, then we have to update each player's amount with
             // the amount the giver gave them by fetching from the
@@ -210,7 +210,7 @@
                 // move
                 var player = ultimatum.getPlayer(index+1);
                 player.amount = parseInt(val);
-                console.log('new giving round value assigned to player', player.id, val)
+                /*console.log('new giving round value assigned to player', player.id, val)*/
 
                 // if we received amounts for all players, we can move
                 // on to the receiving round
@@ -219,7 +219,7 @@
                 }
             });
         } else if (ultimatum.currRound == ultimatum.receivingRound) {
-            console.log('new move for receiving round')
+            /*console.log('new move for receiving round')*/
             // we received an accept/reject from some player, so update
             // that player
             fetchMove(participantId, ultimatum.currRound, index, function(val) {
