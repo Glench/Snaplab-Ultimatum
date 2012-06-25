@@ -3,8 +3,14 @@
     #receiver-form, .receiver-view {
         text-align: center;
         float: left;
-        width: 10%;
+        width: 145px;;
         margin-right: 20px;
+        margin-bottom: 28px;
+        position: relative;
+    }
+    .receiver-view form {
+        position: absolute;
+        bottom: -32px;
     }
     #receiver-form .alert, .receiver-view .alert {
         padding-right: 14px;
@@ -47,7 +53,7 @@
                 </div>
             {% }); %}
 
-            <div class="alert alert-info" style="positon: fixed; right: 25%; top: 190px;">
+            <div class="alert alert-info" style="position: fixed; right: 25%; top: 190px;">
                 <h4 class="alert-heading">Amount left:</h4> <span id="calculatedAmount">{{ totalAmount }}</span>
             </div>
 
@@ -65,12 +71,12 @@
         <div class="alert alert-info">
             <h3>{{ getName() }}</h3>
             <h2>{{ amount }}</h2>
-            <form action>
-                <div style=""><a href="#null" id="accept" class="btn btn-primary">Accept</a></div>
-                <div>or</div>
-                <div><a href="#null" id="reject" class="btn btn-primary">Reject</a></div>
-            </form>
         </div>
+        <form action>
+            <a href="#null" id="accept" class="btn btn-primary">Accept</a>
+            or
+            <a href="#null" id="reject" class="btn btn-primary">Reject</a>
+        </form>
     </div>
 </script>
 
